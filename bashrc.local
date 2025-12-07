@@ -5,6 +5,14 @@ if [[ -r ~/.keyrc ]]; then
     source ~/.keyrc
 fi
 
+# starship
+if [[ -x "$(command -v starship)" ]]; then
+    if ! [[ -r ~/.config/starship.toml ]]; then
+        starship preset tokyo-night -o ~/.config/starship.toml
+    fi
+    source <(starship init bash)
+fi
+
 # ls
 if [[ -x "$(command -v lsd)" ]]; then
     alias ls="lsd"
@@ -107,6 +115,21 @@ fi
 if [[ -x "$(command -v nvim)" ]]; then
     export EDITOR=nvim
     alias view="nvim -RM"
+fi
+
+# zoxide
+if [[ -x "$(command -v zoxide)" ]]; then
+    source <(zoxide init bash --cmd z)
+    alias cd="zd"
+    zd() {
+      if [ $# -eq 0 ]; then
+        builtin cd ~ && return
+      elif [ -d "$1" ]; then
+        builtin cd "$1"
+      else
+        z "$@" && printf "\U000F17A9 " && pwd || echo "Error: Directory not found"
+      fi
+    }
 fi
 
 # go
