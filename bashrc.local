@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# function to test if executable exists in $PATH
 exists() {
     if [[ "$#" -ne 1 ]]; then
         echo '[ERRO]: "exists" requires exactly one argument' >&2
@@ -130,6 +131,13 @@ fi
 if exists nvim; then
     export EDITOR=nvim
     alias view="nvim -RM"
+fi
+
+# micro
+if exists micro; then
+    if ! exists nvim; then
+        export EDITOR=micro
+    fi
 fi
 
 # zoxide
