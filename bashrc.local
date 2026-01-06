@@ -168,7 +168,7 @@ elif exists fvm; then
     flutter() {
         fvm flutter $@
     }
-    source <(fvm flutter bash-completion 2>/dev/null)
+    source <(fvm flutter bash-completion 2> /dev/null)
 fi
 
 # fastfetch
@@ -197,7 +197,7 @@ spf() {
     command spf "$@"
     [ ! -f "$SPF_LAST_DIR" ] || {
         . "$SPF_LAST_DIR"
-        command rm -f -- "$SPF_LAST_DIR" >/dev/null
+        command rm -f -- "$SPF_LAST_DIR" > /dev/null
     }
 }
 
