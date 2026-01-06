@@ -165,6 +165,18 @@ if exists go; then
     alias gop="GOPROXY=https://goproxy.cn"
 fi
 
+# flutter
+if exists flutter; then
+    source <(flutter bash-completion)
+elif exists fvm; then
+    flutter() {
+        fvm flutter $@
+    }
+    if fvm flutter &> /dev/null; then
+        source <(fvm flutter bash-completion)
+    fi
+fi
+
 # fastfetch
 if exists fastfetch; then
     neofetch() {
