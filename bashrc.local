@@ -149,13 +149,13 @@ if exists zoxide; then
     source <(zoxide init bash --cmd z)
     alias cd="zd"
     zd() {
-      if [ $# -eq 0 ]; then
-        builtin cd ~ && return
-      elif [ -d "$1" ]; then
-        builtin cd "$1"
-      else
-        z "$@" && printf "\U000F17A9 " && pwd || echo "Error: Directory not found"
-      fi
+        if [ $# -eq 0 ]; then
+            builtin cd ~ && return
+        elif [ -d "$1" ]; then
+            builtin cd "$1"
+        else
+            z "$@" && printf "\U000F17A9 " && pwd || echo "Error: Directory not found"
+        fi
     }
 fi
 
@@ -174,7 +174,7 @@ if exists fvm; then
     flutter() {
         fvm flutter "$@"
     }
-    source <(fvm flutter bash-completion 2> /dev/null)
+    source <(fvm flutter bash-completion 2>/dev/null)
 elif exists flutter; then
     source <(flutter bash-completion)
 fi
@@ -191,8 +191,8 @@ if exists tuios; then
     source <(tuios completion bash)
 fi
 
-# superfile
-spf() {
+# spf_export
+_spf_export() {
     os=$(uname -s)
     # Linux
     if [[ "$os" == "Linux" ]]; then
@@ -202,11 +202,27 @@ spf() {
     if [[ "$os" == "Darwin" ]]; then
         export SPF_LAST_DIR="$HOME/Library/Application Support/superfile/lastdir"
     fi
+}
+_spf_export
+
+# superfile
+spf() {
     command spf "$@"
     [ ! -f "$SPF_LAST_DIR" ] || {
         . "$SPF_LAST_DIR"
-        command rm -f -- "$SPF_LAST_DIR" > /dev/null
+        command rm -f -- "$SPF_LAST_DIR" >/dev/null
     }
+}
+
+# tmux-spf
+tmux_spf_popup() {
+    local target="$1"
+    command spf
+    [[ -f "$SPF_LAST_DIR" ]] || return 0
+    local cmd
+    cmd="$(cat "$SPF_LAST_DIR")"
+    rm -f -- "$SPF_LAST_DIR"
+    tmux send-keys -t "$target" -- "$cmd" C-m
 }
 
 #opencode
@@ -218,19 +234,18 @@ if exists opencode; then
     # Installation: opencode completion >> ~/.bashrc
     #    or opencode completion >> ~/.bash_profile on OSX.
     #
-    _opencode_yargs_completions()
-    {
+    _opencode_yargs_completions() {
         local cur_word args type_list
         cur_word="${COMP_WORDS[COMP_CWORD]}"
         args=("${COMP_WORDS[@]}")
         # ask yargs to generate completions.
         # see https://stackoverflow.com/a/40944195/7080036 for the spaces-handling awk
         mapfile -t type_list < <(opencode --get-yargs-completions "${args[@]}")
-        mapfile -t COMPREPLY < <(compgen -W "$( printf '%q ' "${type_list[@]}" )" -- "${cur_word}" |
+        mapfile -t COMPREPLY < <(compgen -W "$(printf '%q ' "${type_list[@]}")" -- "${cur_word}" |
             awk '/ / { print "\""$0"\"" } /^[^ ]+$/ { print $0 }')
         # if no match was found, fall back to filename completion
         if [ ${#COMPREPLY[@]} -eq 0 ]; then
-          COMPREPLY=()
+            COMPREPLY=()
         fi
         return 0
     }
