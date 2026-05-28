@@ -186,11 +186,6 @@ if exists fastfetch; then
     }
 fi
 
-# tuios
-if exists tuios; then
-    source <(tuios completion bash)
-fi
-
 # spf_export
 _spf_export() {
     os=$(uname -s)
