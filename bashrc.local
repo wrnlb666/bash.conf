@@ -74,6 +74,11 @@ if exists uv; then
     source <(uv generate-shell-completion bash)
 fi
 
+# mise
+if exists mise; then
+    source <(mise activate bash)
+fi
+
 # python conda
 _setup_conda() {
     local dir
