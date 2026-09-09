@@ -85,6 +85,7 @@ _setup_conda() {
     done
 }
 _setup_conda
+unset -f _setup_conda
 
 # trash-cli && gomi
 if exists gomi; then
@@ -166,10 +167,7 @@ if exists go; then
     GOPATH="$(go env GOPATH)"
     export GOROOT
     export GOPATH
-    case ":$PATH:" in
-    *":$GOPATH/bin:"*) ;;
-    *) export PATH="$PATH:$GOPATH/bin" ;;
-    esac
+    export PATH="${PATH}:${GOPATH}/bin"
     alias gop="GOPROXY=https://goproxy.cn"
 fi
 
@@ -193,6 +191,7 @@ _spf_export() {
     fi
 }
 _spf_export
+unset -f _spf_export
 
 # superfile
 spf() {
@@ -215,10 +214,7 @@ tmux_spf_popup() {
 }
 
 # rust
-case ":$PATH:" in
-*":$HOME/.cargo/bin:"*) ;;
-*) export PATH="$PATH:$HOME/.cargo/bin" ;;
-esac
+export PATH="${PATH}:${HOME}/.cargo/bin"
 
 # mkj
 mkj() {
@@ -233,6 +229,29 @@ uncache() {
     [[ -e "$dc" ]] || return
     echo 3 | sudo tee "$dc" >/dev/null
 }
+
+# dedup $PATH
+_path_dedup() {
+    local entry new_path=
+    local entry first=1
+    local -a entries=()
+    local -A seen=()
+    local IFS=:
+    read -r -a entries <<<"${PATH}:"
+    for entry in "${entries[@]}"; do
+        [[ -n ${seen["$entry"]+x} ]] && continue
+        seen["$entry"]=1
+        if ((first)); then
+            new_path="$entry"
+            first=0
+        else
+            new_path+=":$entry"
+        fi
+    done
+    export PATH="$new_path"
+}
+_path_dedup
+unset -f _path_dedup
 
 # bash vi mode
 set -o vi
