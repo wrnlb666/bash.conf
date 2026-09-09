@@ -6,6 +6,11 @@ exists() {
     [[ -x "$(command -v "${cmd}")" ]]
 }
 
+# mise
+if exists mise; then
+    eval "$(mise activate bash)"
+fi
+
 # starship
 if exists starship && [[ -r ~/.config/starship.toml ]]; then
     eval "$(starship init bash)"
@@ -43,7 +48,7 @@ venv() {
             for v in ".venv" "venv"; do
                 if [[ -d "$dir/$v" && -f "$dir/$v/pyvenv.cfg" ]]; then
                     echo "Entering Virtual Environment '$dir/$v'..."
-                    eval "$dir/$v/bin/activate"
+                    source "$dir/$v/bin/activate"
                     return
                 fi
             done
@@ -69,17 +74,12 @@ if exists uv; then
     eval "$(uv generate-shell-completion bash)"
 fi
 
-# mise
-if exists mise; then
-    eval "$(mise activate bash)"
-fi
-
 # python conda
 _setup_conda() {
     local dir
     for dir in "conda" "miniforge3" "miniconda" "miniconda3" "anaconda3" "Conda" "Anaconda"; do
         if [[ -r "${HOME}/${dir}/etc/profile.d/conda.sh" ]]; then
-            eval "${HOME}/${dir}/etc/profile.d/conda.sh"
+            source "${HOME}/${dir}/etc/profile.d/conda.sh"
             break
         fi
     done
@@ -100,12 +100,6 @@ if exists bat; then
 fi
 
 # fzf
-if [[ -r /usr/share/fzf/completion.bash ]]; then
-    source /usr/share/fzf/completion.bash
-fi
-if [[ -r /usr/share/fzf/key-bindings.bash ]]; then
-    source /usr/share/fzf/key-bindings.bash
-fi
 if exists fzf; then
     export FZF_DEFAULT_OPTS=" \
         --color=bg+:#313244,bg:#1E1E2E,spinner:#F5E0DC,hl:#F38BA8 \
@@ -159,7 +153,7 @@ if exists zoxide; then
         if [ $# -eq 0 ]; then
             builtin cd ~ && return
         elif [ -d "$1" ]; then
-            builtin cd "$1" || exit 1
+            builtin cd "$1" || return 1
         else
             z "$@" && printf "\U000F17A9 " && pwd || echo "Error: Directory not found"
         fi
@@ -172,7 +166,10 @@ if exists go; then
     GOPATH="$(go env GOPATH)"
     export GOROOT
     export GOPATH
-    export PATH=$PATH:$GOPATH/bin
+    case ":$PATH:" in
+    *":$GOPATH/bin:"*) ;;
+    *) export PATH="$PATH:$GOPATH/bin" ;;
+    esac
     alias gop="GOPROXY=https://goproxy.cn"
 fi
 
@@ -218,13 +215,16 @@ tmux_spf_popup() {
 }
 
 # rust
-export PATH=$PATH:~/.cargo/bin
+case ":$PATH:" in
+*":$HOME/.cargo/bin:"*) ;;
+*) export PATH="$PATH:$HOME/.cargo/bin" ;;
+esac
 
 # mkj
 mkj() {
     local dir="$1"
-    mkdir -p "$dir"
-    cd "$dir" || exit 1
+    mkdir -p -- "$dir"
+    builtin cd -- "$dir" || return 1
 }
 
 # clear cache
