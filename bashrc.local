@@ -6,14 +6,9 @@ exists() {
     [[ -x "$(command -v "${cmd}")" ]]
 }
 
-# keys
-if [[ -r ~/.keyrc ]]; then
-    source ~/.keyrc
-fi
-
 # starship
 if exists starship && [[ -r ~/.config/starship.toml ]]; then
-    source <(starship init bash)
+    eval "$(starship init bash)"
 fi
 
 # ls
@@ -48,7 +43,7 @@ venv() {
             for v in ".venv" "venv"; do
                 if [[ -d "$dir/$v" && -f "$dir/$v/pyvenv.cfg" ]]; then
                     echo "Entering Virtual Environment '$dir/$v'..."
-                    source "$dir/$v/bin/activate"
+                    eval "$dir/$v/bin/activate"
                     return
                 fi
             done
@@ -71,12 +66,12 @@ venv() {
 
 # python uv
 if exists uv; then
-    source <(uv generate-shell-completion bash)
+    eval "$(uv generate-shell-completion bash)"
 fi
 
 # mise
 if exists mise; then
-    source <(mise activate bash)
+    eval "$(mise activate bash)"
 fi
 
 # python conda
@@ -84,7 +79,7 @@ _setup_conda() {
     local dir
     for dir in "conda" "miniforge3" "miniconda" "miniconda3" "anaconda3" "Conda" "Anaconda"; do
         if [[ -r "${HOME}/${dir}/etc/profile.d/conda.sh" ]]; then
-            source "${HOME}/${dir}/etc/profile.d/conda.sh"
+            eval "${HOME}/${dir}/etc/profile.d/conda.sh"
             break
         fi
     done
@@ -118,7 +113,7 @@ if exists fzf; then
         --color=marker:#B4BEFE,fg+:#CDD6F4,prompt:#CBA6F7,hl+:#F38BA8 \
         --color=selected-bg:#45475A \
         --color=border:#6C7086,label:#CDD6F4"
-    source <(fzf --bash)
+    eval "$(fzf --bash)"
     if exists fd; then
         export FZF_DEFAULT_COMMAND="fd --type f"
     fi
@@ -141,35 +136,30 @@ if exists fzf; then
     fi
 fi
 
-# neovim
+# EDITOR
 if exists nvim; then
     export EDITOR=nvim
     alias view="nvim -RM"
+elif exists edit; then
+    export EDITOR=edit
+elif exists micro; then
+    export EDITOR=micro
 fi
 
-# edit
-if exists edit; then
-    if ! [[ -v EDITOR ]]; then
-        export EDITOR=edit
-    fi
-fi
-
-# micro
-if exists micro; then
-    if ! [[ -v EDITOR ]]; then
-        export EDITOR=micro
-    fi
+# SUDO_EDITOR
+if [[ -v EDITOR ]]; then
+    export SUDO_EDITOR="$EDITOR"
 fi
 
 # zoxide
 if exists zoxide; then
-    source <(zoxide init bash --cmd z)
+    eval "$(zoxide init bash --cmd z)"
     alias cd="zd"
     zd() {
         if [ $# -eq 0 ]; then
             builtin cd ~ && return
         elif [ -d "$1" ]; then
-            builtin cd "$1"
+            builtin cd "$1" || exit 1
         else
             z "$@" && printf "\U000F17A9 " && pwd || echo "Error: Directory not found"
         fi
@@ -240,8 +230,8 @@ mkj() {
 # clear cache
 uncache() {
     local dc=/proc/sys/vm/drop_caches
-    [[ -e  "$dc" ]] || return
-    echo 3 | sudo tee "$dc" > /dev/null
+    [[ -e "$dc" ]] || return
+    echo 3 | sudo tee "$dc" >/dev/null
 }
 
 # bash vi mode
