@@ -11,6 +11,7 @@ depends=(
     'trash-put'
     'bat'
     'fzf'
+    'tv' # television
     'nvim'
     'micro'
     'edit'

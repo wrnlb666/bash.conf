@@ -131,6 +131,11 @@ if exists fzf; then
     fi
 fi
 
+# television
+if exists tv; then
+    eval "$(tv init bash)"
+fi
+
 # EDITOR
 if exists nvim; then
     export EDITOR=nvim
