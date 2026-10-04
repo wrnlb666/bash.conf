@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
 
+# bash vi mode
+set -o vi
+bind '"\C-l": clear-screen'
+bind -m vi-insert '"\C-?": backward-delete-char'
+bind -m vi-insert '"jj": vi-movement-mode'
+bind -m vi-insert '"jk": vi-movement-mode'
+
 # function to test if executable exists in $PATH
 exists() {
     local cmd="${1:-cat}"
@@ -257,10 +264,3 @@ _path_dedup() {
 }
 _path_dedup
 unset -f _path_dedup
-
-# bash vi mode
-set -o vi
-bind '"\C-l": clear-screen'
-bind -m vi-insert '"\C-?": backward-delete-char'
-bind -m vi-insert '"jj": vi-movement-mode'
-bind -m vi-insert '"jk": vi-movement-mode'
